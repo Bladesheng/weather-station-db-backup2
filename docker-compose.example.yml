@@ -1,0 +1,25 @@
+services:
+  app:
+    build: .
+    environment:
+      # https://fly.io/docs/flyctl/auth-token/
+      FLY_API_ACCES_TOKEN: "XXX"
+      # name of the fly.io database app
+      FLY_APP_NAME: "XXX"
+      # name of the postgres database itself
+      FLY_DB_NAME: "XXX"
+      PGPASSWORD: "XXX"
+
+      # Stuff from service account key file
+      # https://medium.com/@matheodaly.md/using-google-drive-api-with-python-and-a-service-account-d6ae1f6456c2
+      GCP_PROJECT_ID: "XXX"
+      GCP_PRIVATE_KEY_ID: "XXX"
+      GCP_PRIVATE_KEY: "-----BEGIN PRIVATE KEY-----\nXXX\n-----END PRIVATE KEY-----\n"
+      GCP_CLIENT_EMAIL: "XXX@XXX.iam.gserviceaccount.com"
+      GCP_CLIENT_ID: "123"
+      GCP_CLIENT_CERT_URL: "https://www.googleapis.com/robot/v1/metadata/x509/XXX"
+
+      # Get this from url when you are in the folder where you want to upload into
+      # e.g. https://drive.google.com/drive/folders/1gwgz_DDWSTZd7uc3ZEkIsHQLKfgZd8WD
+      # Also, make sure the folder is shared with the service account email
+      GDRIVE_FOLDER_ID: "XXX"

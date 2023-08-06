@@ -1,0 +1,49 @@
+# This workflow automatically dumps fly.io database, zips the dump and uploads it to GDrive
+
+name: Database dump backup
+
+on:
+  # every day at 3am
+  schedule:
+    - cron: "0 3 * * *"
+
+  # when pushing to main
+  push:
+    branches: [main]
+
+  # or run this manually from the Actions tab
+  workflow_dispatch:
+
+# Allow one concurrent run
+concurrency:
+  group: "db-backup"
+  cancel-in-progress: true
+
+jobs:
+  job-1:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+
+      - name: Build the Docker image
+        run: docker build --file Dockerfile --tag db-backup-image .
+
+      - name: Run the Docker image
+        run: |
+          docker run \
+            --name db-backup-container \
+            --env FLY_API_ACCES_TOKEN=${{ secrets.FLY_API_ACCES_TOKEN }} \
+            --env FLY_APP_NAME=${{ secrets.FLY_APP_NAME }} \
+            --env FLY_DB_NAME=${{ secrets.FLY_DB_NAME }} \
+            --env PGPASSWORD=${{ secrets.PGPASSWORD }} \
+            --env GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }} \
+            --env GCP_PRIVATE_KEY_ID=${{ secrets.GCP_PRIVATE_KEY_ID }} \
+            --env GCP_PRIVATE_KEY=${{ secrets.GCP_PRIVATE_KEY }} \
+            --env GCP_CLIENT_EMAIL=${{ secrets.GCP_CLIENT_EMAIL }} \
+            --env GCP_CLIENT_ID=${{ secrets.GCP_CLIENT_ID }} \
+            --env GCP_CLIENT_CERT_URL=${{ secrets.GCP_CLIENT_CERT_URL }} \
+            --env GDRIVE_FOLDER_ID=${{ secrets.GDRIVE_FOLDER_ID }} \
+            db-backup-image
