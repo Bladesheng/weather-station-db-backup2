@@ -1,2 +1,2 @@
-docker-compose.yml
 .env
+SA_key.json

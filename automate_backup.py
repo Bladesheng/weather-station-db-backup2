@@ -10,8 +10,6 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from googleapiclient.errors import HttpError
 
-from config import DATABASE_URL, GCP_CREDENTIALS_DICT, GDRIVE_FOLDER_ID
-
 
 def db_dump():
     """
@@ -22,7 +20,7 @@ def db_dump():
         print(f"Dumping database to {FILENAME}")
 
         process = sh.pg_dump(
-            DATABASE_URL,
+            os.getenv("DATABASE_URL"),
             file=FILENAME,
             _out=print,
             _bg=False,
@@ -74,8 +72,8 @@ def upload_to_gdrive(filename):
     """
     print("Authenticating with Google OAuth")
 
-    credentials = service_account.Credentials.from_service_account_info(
-        GCP_CREDENTIALS_DICT,
+    credentials = service_account.Credentials.from_service_account_file(
+        './SA_key.json',
         scopes=['https://www.googleapis.com/auth/drive']
     )
     service = build('drive', 'v3', credentials=credentials)
@@ -84,7 +82,7 @@ def upload_to_gdrive(filename):
 
     file_metadata = {
         'name': f'{filename}.zip',
-        'parents': [GDRIVE_FOLDER_ID]
+        'parents': [os.getenv("GDRIVE_FOLDER_ID")]
     }
 
     media = MediaFileUpload(
