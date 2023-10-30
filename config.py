@@ -1,8 +1,6 @@
 import os
 
-FLY_API_ACCES_TOKEN = os.getenv("FLY_API_ACCES_TOKEN")
-FLY_APP_NAME = os.getenv("FLY_APP_NAME")
-FLY_DB_NAME = os.getenv("FLY_DB_NAME")
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 GCP_CREDENTIALS_DICT = {
     "type": "service_account",

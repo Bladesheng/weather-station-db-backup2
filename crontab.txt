@@ -1,0 +1,3 @@
+# every morning at 04:00
+# 0 4 * * * /usr/local/bin/python3 -u /app/automate_backup.py >> /app/cron.log 2>&1
+* * * * * /usr/local/bin/python3 -u /app/automate_backup.py >> /app/cron.log 2>&1

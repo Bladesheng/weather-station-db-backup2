@@ -1,12 +1,7 @@
 FROM python:3.12-rc-slim-bookworm
-RUN apt-get update -y && apt-get upgrade -y
+RUN apt-get update && apt-get upgrade -y
+RUN apt-get install cron postgresql-client -y
 
-RUN apt-get install curl -y
-RUN curl -L https://fly.io/install.sh | FLYCTL_INSTALL=/usr/local sh
-
-RUN apt-get install postgresql-client -y
-
-RUN mkdir /app
 WORKDIR /app
 
 # dependecies first
@@ -17,4 +12,14 @@ RUN pip install -r requirements.txt
 COPY . .
 RUN mkdir dump archive
 
-CMD ["python3", "-u", "automate_backup.py"]
+# create log file to be able to run tail
+RUN touch /app/cron.log
+
+# install crontab
+ENV TZ="Europe/Prague"
+ENV CRON_TZ="Europe/Prague"
+RUN crontab crontab.txt
+
+# copy env variables somewhere, where cron can access them
+# https://stackoverflow.com/questions/65884276
+CMD printenv > /etc/environment && cron && tail -f /app/cron.log

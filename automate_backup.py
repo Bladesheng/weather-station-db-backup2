@@ -10,80 +10,28 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from googleapiclient.errors import HttpError
 
-from config import FLY_API_ACCES_TOKEN, FLY_APP_NAME, FLY_DB_NAME, GCP_CREDENTIALS_DICT, GDRIVE_FOLDER_ID
+from config import DATABASE_URL, GCP_CREDENTIALS_DICT, GDRIVE_FOLDER_ID
 
 
-def fly_db_proxy():
-    """
-    Proxy connection to fly.io database
-    """
-    print(f"Proxying connection to {FLY_APP_NAME} database")
-    try:
-        return sh.fly(
-            "proxy",
-            "5442:5432",
-            app=FLY_APP_NAME,
-            t=FLY_API_ACCES_TOKEN,
-            _out=print,
-            _bg=True  # the proxy has to run in background
-        )
-    except sh.ErrorReturnCode as e:
-        print(e)
-        sys.exit(0)
-
-
-def await_proxy(proxy_connection):
-    """
-    Wait until proxy connection is ready, because it runs in background
-    @param proxy_connection: whatever sh.fly() returns
-    """
-    i = 0
-    while i < 30:
-        try:
-            sh.pg_isready(host="127.0.0.1", port=5442)
-
-            print("Proxy connection is ready")
-            return
-
-        except sh.ErrorReturnCode as e:
-            i += 1
-            time.sleep(1)
-
-    print("Could not proxy to database. Exiting")
-    proxy_connection.terminate()
-    sys.exit(0)
-
-
-def fly_db_dump():
+def db_dump():
     """
     Dump the database into db.sql file
     """
-
-    proxy_connection = None
     try:
-        proxy_connection = fly_db_proxy()
-        await_proxy(proxy_connection)
-
         FILENAME = "./dump/db.sql"
         print(f"Dumping database to {FILENAME}")
 
         process = sh.pg_dump(
-            host="127.0.0.1",
-            port=5442,
-            username="postgres",
+            DATABASE_URL,
             file=FILENAME,
-            dbname=FLY_DB_NAME,
             _out=print,
             _bg=False,
         )
 
-        print(f"Database dumped. Terminating proxy connection")
-        proxy_connection.terminate()
+        print(f"Database dumped")
 
     except sh.ErrorReturnCode as e:
         print(e)
-        if proxy_connection:
-            proxy_connection.terminate()
         sys.exit(0)
 
 
@@ -159,9 +107,9 @@ def upload_to_gdrive(filename):
 
 def controller():
     print("Starting database backup")
-    start = time.time()
+    os.chdir("/app")
 
-    fly_db_dump()
+    db_dump()
 
     # name of the newly created zip file
     zip_name = "backup " + datetime.now().strftime(r"%d/%m/%Y %H:%M:%S").replace('/', '-')
@@ -172,9 +120,6 @@ def controller():
     )
 
     upload_to_gdrive(zip_name)
-
-    end = time.time()
-    print(f"Total runtime of the python script: {round(end - start, 2)} s")
 
 
 if __name__ == "__main__":
