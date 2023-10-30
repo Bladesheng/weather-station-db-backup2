@@ -2,18 +2,16 @@
 
 ## About this repository
 
-Once a day, this repo runs Github action, which connects to my [weather station database](https://github.com/Bladesheng/weather-station-backend), creates dump of the db, zips it and uploads it to my google drive. Everything runs in docker and is completely automated.
+Docker container with cronjob, that runs python script once a day. The script creates pg_dump of database that is running on the same docker network, zips it and uploads it to google drive.
 
-## Running locally
+## How to run this
 
-- Clone the repo
-- Create `docker-compose.yml` file with your own credentials and stuff - see `docker-compose.example.yml`.
-- Run Docker:
+-   Clone the repo
+-   Create .env file - see `.example.env`
+-   Create service account and get the [JSON key](https://medium.com/@matheodaly.md/using-google-drive-api-with-python-and-a-service-account-d6ae1f6456c2) file
+-   Place the JSON key file in the same directory as the docker-compose and rename it to `SA_key.json` (can be change in docker-compose)
+-   Run Docker:
 
 ```sh
 docker compose up --build
 ```
-
-## Running from your own Github repo
-
-- Set all Github secrets, same as in `docker-compose.example.yml`
